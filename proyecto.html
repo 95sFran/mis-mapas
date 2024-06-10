@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="text/javascript" src="embalses.js"></script>
+<style>
+body {
+ padding: 0;
+ margin: 0;
+}
+html, body, #map {
+ height: 100%;
+}
+#title {
+ position: absolute;
+   top: 10px; /* Cambia la distancia desde la parte inferior */
+   left:100px; /* Cambia la distancia desde la parte izquierda */
+   font-size: 25px;
+   padding: 15px;
+   background-color: #f2f2f2;
+   z-index: 1000; /* Asegura que esté por encima del mapa */
+}
+
+</style>
+</head>
+<body>
+<div id="title">Confederación Hidrográfica del Duero</div>
+<div id="map"></div>
+<script>
+var map = L.map('map', {
+ center: [41.66, -4.72],
+ zoom: 7
+});
+//Añadir mapa base 
+var OSM = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmFkaXJpbmciLCJhIjoiY2tob2phbXVoMDE4cjJ6cnN6Nmh5eWRpeSJ9.-9CD1Qdet6QZ0-la9X-WxA', 
+{attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>', 
+maxZoom: 18, 
+id: 'mapbox/streets-v11', 
+tileSize: 512, 
+zoomOffset: -1,})
+.addTo(map);
+
+var demarcacion = L.tileLayer.wms('http://localhost:8080/geoserver/proyecto/wms', {
+ layers: 'proyecto:limites_demarcacionpolygon',
+ format: 'image/png',
+ transparent: true
+});
+
+var rios = L.tileLayer.wms('http://localhost:8080/geoserver/proyecto/wms', {
+ layers: 'proyecto:segmentos_rioline',
+ format: 'image/png',
+ transparent: true,
+}).addTo(map);
+
+var embalses = L.geoJson(embalses, {
+ style: function (feature) {
+   return {
+     color: "#1412E6",
+     weight: 2,
+     opacity: 0.6
+   };
+ }
+});
+
+//Control de capas
+var baseMaps = {
+ "Mapa base": OSM
+};
+
+var overlayMaps = {
+ "Límites de Demarcación": demarcacion,
+ "Ríos": rios,
+ "Embalses": embalses
+};
+
+L.control.layers(baseMaps, overlayMaps).addTo(map);
+embalses.addTo(map);
+
+// Agregar control de escala métrica
+L.control.scale({
+ metric: true,
+ imperial: false
+}).addTo(map);
+
+</script>
+</body>
+</html>
+
